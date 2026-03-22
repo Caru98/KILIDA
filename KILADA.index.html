@@ -1,0 +1,208 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><link rel="stylesheet" type="text/css" href="cid:css-d14df7d1-4eea-447e-b439-293041ba8a28@mhtml.blink" /><link rel="stylesheet" type="text/css" href="cid:css-eca2a416-659c-4f08-889d-5f8fdcf55a38@mhtml.blink" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>KALIDA - 通用世界观模拟器</title>
+
+</head>
+<body>
+
+<div class="lo-ov" id="loadOv"><div style="font-size:22px;animation:float 2s ease-in-out infinite">🌌✨</div><div class="lo-sp"></div><div class="lo-t" id="loadTxt">AI 正在编织命运...</div></div>
+<div class="modal-overlay" id="profileModal"><div class="modal-box" id="profileBox"></div></div>
+<div class="bag-popup" id="bagPopup"><div class="bag-sheet" id="bagSheet"></div></div>
+<div class="phone-card-popup" id="phoneCardPopup"><div class="phone-card" id="phoneCardBox"></div></div>
+<div class="menu-ov" id="menuOv"><div class="menu-box" id="menuBox"></div></div>
+
+<div class="screen active" id="scrHome">
+<div class="home" style="min-height:100vh">
+<div class="home-logo">🌌</div>
+<div class="home-t">KALIDA</div>
+<div style="font-size:12px;color:var(--accent);margin:3px 0;font-weight:600">通用世界观模拟器</div>
+<div class="home-st">"创造你的世界，书写你的故事。"<br>☁️ 无限世界 · 无限可能 · 等你探索 ☁️</div>
+<button class="home-btn pri">🎮 开始新游戏</button>
+<button class="home-btn">💾 存档 / 读档</button>
+<button class="home-btn">📝 高级设定 (Prompt)</button>
+<button class="home-btn">🔌 API 配置</button>
+<div style="font-size:9px;color:var(--text3);margin-top:18px">v1.0 · 🌌 Universal Engine</div>
+</div></div>
+
+<div class="screen" id="scrApi">
+<div class="hdr"><button class="back">‹</button><h1>🔌 API 配置</h1></div>
+<div style="flex:1;overflow-y:auto;padding-bottom:16px">
+<div class="cloud nt">
+<div class="fg"><label class="fl">Base URL</label><input class="fi" id="apiUrl" placeholder="https://api.openai.com/v1"></div>
+<div class="fg"><label class="fl">API Key</label><input class="fi" id="apiKey" type="password" placeholder="sk-xxxxxx"></div>
+<div class="fg"><label class="fl">Model</label><div style="display:flex;gap:5px"><select class="fs" id="apiSel" style="flex:1"><option value="">--选择--</option></select><button class="btn btn-o btn-s">🔄</button></div></div>
+<div class="fg"><label class="fl">手动输入模型</label><input class="fi" id="apiModel" placeholder="gpt-4o / claude-3-5-sonnet"></div>
+<div style="display:flex;gap:6px;margin-top:10px"><button class="btn btn-p" style="flex:1">💾 保存</button><button class="btn btn-g" style="flex:1">🧪 测试</button></div>
+<div id="apiRes" style="margin-top:8px;padding:8px;border-radius:12px;font-size:10px;display:none"></div>
+</div></div></div>
+
+<!-- ==================================================== -->
+<!-- =========== 新增：高级设定 (Prompt) 模块 =========== -->
+<!-- ==================================================== -->
+<div class="screen" id="scrPrompt">
+<div class="hdr"><button class="back">‹</button><h1>📝 高级设定 (Prompt)</h1></div>
+<div style="flex:1;overflow-y:auto;padding-bottom:16px">
+    <div class="cloud nt">
+        <div class="cloud-t">📜 核心设定条目</div>
+        <div class="fg">
+            <label class="fl" style="display:flex; align-items:center; gap:6px;"><input type="checkbox" checked>世界观 (Worldview)</label>
+            <textarea class="ft" rows="5" placeholder="描述你的世界背景、规则、历史、文化..."></textarea>
+        </div>
+        <div class="fg">
+            <label class="fl" style="display:flex; align-items:center; gap:6px;"><input type="checkbox" checked>角色设定 (Character)</label>
+            <textarea class="ft" rows="3" placeholder="描述你的角色身份、性格、目标..."></textarea>
+        </div>
+        <div class="fg">
+            <label class="fl" style="display:flex; align-items:center; gap:6px;"><input type="checkbox">文风指导 (Style Guide)</label>
+            <textarea class="ft" rows="2" placeholder="例如：请使用轻松幽默的口吻，或者“村上春树”式的风格。"></textarea>
+        </div>
+        <div class="fg">
+            <label class="fl" style="display:flex; align-items:center; gap:6px;"><input type="checkbox">记忆/摘要 (Memory)</label>
+            <textarea class="ft" rows="3" placeholder="AI会记住这里的关键信息。可以手动更新，比如：“我刚刚在黑市卖掉了一颗龙蛋，赚了500金币。”"></textarea>
+        </div>
+    </div>
+    <div class="cloud nt">
+        <div class="cloud-t">📦 导入/导出预设</div>
+        <p style="font-size:11px; color:var(--text2); margin-bottom:12px;">你可以方便地分享你的世界观设定，或导入他人创建的世界！</p>
+        <button class="btn btn-o btn-full" style="margin-bottom:6px">📤 导出当前预设 (.json)</button>
+        <button class="btn btn-o btn-full">📥 导入预设 (.json)</button>
+        <input type="file" id="importPromptF" accept=".json" style="display:none">
+    </div>
+</div>
+</div>
+
+<div class="screen" id="scrSet">
+<div class="hdr"><button class="back">‹</button><h1>⚙️ 美化设置</h1></div>
+<div style="flex:1;overflow-y:auto;padding-bottom:16px">
+<div class="cloud nt">
+<div class="cloud-t">🎨 主题美化</div>
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><label style="flex:1;font-size:11px">背景</label><input type="color" id="cBg" value="#fef9f5" style="width:32px;height:26px;border:none;border-radius:6px;cursor:pointer;background:transparent"></div>
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><label style="flex:1;font-size:11px">卡片</label><input type="color" id="cCard" value="#ffffff" style="width:32px;height:26px;border:none;border-radius:6px;cursor:pointer;background:transparent"></div>
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><label style="flex:1;font-size:11px">强调</label><input type="color" id="cAcc" value="#f4a7b0" style="width:32px;height:26px;border:none;border-radius:6px;cursor:pointer;background:transparent"></div>
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><label style="flex:1;font-size:11px">字号</label><input type="range" id="cFs" min="12" max="20" value="14" style="width:100px;accent-color:var(--accent)"><span style="font-size:10px;color:var(--accent);min-width:30px" id="fsVal">14</span></div>
+<button class="btn btn-p btn-full">💾 保存</button>
+</div></div></div>
+
+<div class="screen" id="scrSave">
+<div class="hdr"><button class="back">‹</button><h1>💾 存档管理</h1></div>
+<div style="flex:1;overflow-y:auto;padding-bottom:16px"><div class="cloud nt" id="saveSlots"></div>
+<div class="cloud nt"><div class="cloud-t">📦 导入/导出</div>
+<button class="btn btn-o btn-full" style="margin-bottom:6px">📤 导出全部存档</button>
+<button class="btn btn-o btn-full">📥 导入存档</button>
+<input type="file" id="importF" accept=".json" style="display:none">
+</div></div></div>
+
+<!-- ==================================================== -->
+<!-- ========== 修改：世界观构建 (原角色创建) ========== -->
+<!-- ==================================================== -->
+<div class="screen" id="scrCC">
+<div class="hdr"><button class="back">‹</button><h1>🎭 世界观构建</h1></div>
+<div class="cc-dots" id="ccDots"></div>
+<div style="flex:1;overflow-y:auto;padding-bottom:16px" id="ccBox">
+    <div class="cloud">
+        <div class="cloud-t">第一步：定义你的世界</div>
+        <div class="fg">
+            <label class="fl">世界名称</label>
+            <input class="fi" placeholder="例如：赛博都市“夜之城”">
+        </div>
+        <div class="fg">
+            <label class="fl">核心背景设定</label>
+            <textarea class="ft" rows="6" placeholder="详细描述这个世界的基础规则、历史、科技/魔法水平、文化风俗等。AI 将严格遵守这里的设定。"></textarea>
+        </div>
+        <div class="fg">
+            <label class="fl">你的身份</label>
+            <input class="fi" placeholder="例如：一个刚入行的记者、被流放的精灵王子...">
+        </div>
+         <button class="btn btn-p btn-full">开启我的故事 →</button>
+    </div>
+</div></div>
+
+<div class="screen" id="scrGame">
+<div class="hdr" style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:linear-gradient(135deg,#fff5f7,#fff0f3)">
+<div style="font-size:13px;font-weight:700;color:var(--accent)">KALIDA</div>
+<div style="display:flex;gap:5px">
+<button class="btn btn-o btn-s" style="font-size:14px;padding:4px 10px">☰</button>
+</div></div>
+<div class="game-body" id="gameBody">
+<div class="tab-page active" id="tabStory"></div>
+<div class="tab-page" id="tabChar"></div>
+
+<!-- ==================================================== -->
+<!-- ========= 新增：社交(论坛)模块 示例结构 ========== -->
+<!-- ==================================================== -->
+<div class="tab-page" id="tabSocial">
+    <div style="padding:10px 14px; background:var(--card); border-bottom:1px solid var(--border);">
+        <h2 style="font-size:15px; margin-bottom:4px;">🌍 世界论坛</h2>
+        <button class="btn btn-p btn-full">✍️ 发布新帖子</button>
+    </div>
+    <!-- AI动态生成内容区域 -->
+    <div class="wb-post">
+        <div class="wb-top">
+            <div class="wb-av">🤖</div>
+            <div class="wb-info">
+                <div class="wb-name">系统管理员</div>
+                <div class="wb-sub">刚刚</div>
+            </div>
+        </div>
+        <div class="wb-txt">欢迎来到 KALIDA 世界论坛！在这里，你可以和这个世界的“人们”自由交流。</div>
+    </div>
+    <div class="wb-post">
+        <div class="wb-top">
+            <div class="wb-av">🧑‍🚀</div>
+            <div class="wb-info">
+                <div class="wb-name">星际牛仔</div>
+                <div class="wb-sub">5分钟前</div>
+            </div>
+        </div>
+        <div class="wb-txt">有人接到“清理C-7星区陨石带”的任务吗？赏金挺高的，但我的飞船引擎快报废了，求个搭档！</div>
+        <div class="wb-bar" style="margin-top:8px;"><span>转发 2</span> <span>评论 5</span> <span>点赞 12</span></div>
+    </div>
+</div>
+
+<div class="tab-page" id="tabBag"></div>
+
+<!-- ==================================================== -->
+<!-- =========== 新增：手机(聊天)模块 示例结构 ========== -->
+<!-- ==================================================== -->
+<div class="tab-page" id="tabPhone">
+    <div class="phone-wrap">
+        <div class="phone-frame">
+            <div class="phone-screen">
+                <div class="phone-notch"><div class="phone-notch-cam"></div></div>
+                <div class="app-pg active">
+                    <div class="app-hdr"><h3>聊天</h3></div>
+                    <div class="app-body">
+                        <!-- AI动态生成内容区域 -->
+                        <div class="wx-contact">
+                            <div class="wx-av">线</div>
+                            <div class="wx-info">
+                                <div class="wx-nm"><span>线人老王</span><span class="wx-time">上午10:32</span></div>
+                                <div class="wx-msg">新消息：[图片] 一份加密文件</div>
+                            </div>
+                        </div>
+                        <div class="wx-contact">
+                            <div class="wx-av">🔧</div>
+                            <div class="wx-info">
+                                <div class="wx-nm"><span>机械师珍妮</span><span class="wx-time">昨天</span></div>
+                                <div class="wx-msg">你的义体改造预约好了，别迟到。</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="tab-page" id="tabEnding"></div>
+</div>
+<div class="nav" id="mainNav">
+<div class="nav-i act" id="navStory"><span class="nav-ico">📖</span><span class="nav-lb">动态</span></div>
+<div class="nav-i" id="navChar"><span class="nav-ico">👤</span><span class="nav-lb">人物</span></div>
+<div class="nav-i" id="navSocial"><span class="nav-ico">👥</span><span class="nav-lb">社交</span><span class="nav-dot" id="socialDot"></span></div>
+<div class="nav-i" id="navBag"><span class="nav-ico">🧳</span><span class="nav-lb">行李箱</span></div>
+<div class="nav-i" id="navPhone"><span class="nav-ico">📱</span><span class="nav-lb">手机</span><span class="nav-dot" id="phoneDot"></span></div>
+<div class="nav-i" id="navEnding"><span class="nav-ico">🏆</span><span class="nav-lb">结局</span></div>
+</div></div>
+
+</body></html>
