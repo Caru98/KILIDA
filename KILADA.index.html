@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KALIDA - 通用世界观模拟器</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        :root { --bg:#fef9f5; --bg2:#fff7f2; --card:#ffffff; --card2:#fff5ef; --accent:#f4a7b0; --accent2:#f4a9a8; --accent3:#ffd89e; --accent4:#b8ddb5; --text:#4a3f3a; --text2:#b5a59a; --text3:#d4c8be; --border:#f5e0d8; --border2:#edd5cb; --shadow:0 2px 12px rgba(244,167,176,0.1); --shadow2:0 4px 20px rgba(244,167,176,0.15); --pink:#fce4e8; --pink2:#fff0f3; --pink3:#ffd6dc; --blue:#e8f2fc; --green:#e5f5e0; --yellow:#fef8e0; --r:18px; --font:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif; --fs:14px; }
+        body { font-family: var(--font); font-size: var(--fs); background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+        .screen { display: none; min-height: 100vh; width:100%; }
+        .screen.active { display: flex; flex-direction: column; animation: 0.3s ease 0s 1 normal none running fadeIn; }
+        @keyframes fadeIn { 0% { opacity: 0; transform: translateY(6px); } 100% { opacity: 1; transform: translateY(0px); } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes popIn { 0% { transform: scale(0.85); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .lo-ov { display: none; position: fixed; inset: 0px; background: rgba(254, 249, 245, 0.92); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; gap: 12px; backdrop-filter: blur(4px); }
+        .lo-ov.show { display: flex; }
+        .lo-sp { width: 32px; height: 32px; border: 3px solid var(--accent); border-top-color: transparent; border-radius: 50%; animation: 0.8s linear 0s infinite normal none running spin; }
+        .lo-t { font-size: 12px; color: var(--text2); }
+        .cloud { background: var(--card); border: 1.5px solid var(--border); border-radius: 22px; margin: 8px 14px; padding: 14px; box-shadow: var(--shadow); position: relative; animation: 0.4s ease 0s 1 normal none running popIn; }
+        .cloud-t { font-size: 13px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+        .hdr { background: linear-gradient(135deg, rgb(255, 245, 247), rgb(255, 240, 243)); padding: 14px 16px; text-align: center; border-bottom: 1px solid var(--border); position: sticky; top: 0px; z-index: 100; }
+        .hdr h1 { font-size: 15px; font-weight: 700; color: var(--accent); }
+        .back { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--accent); font-size: 22px; cursor: pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+        .back:active { background: var(--pink2); }
+        .btn { padding: 9px 18px; border-radius: 22px; border: none; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease 0s; font-family: var(--font); display: inline-flex; align-items: center; gap: 5px; justify-content: center; }
+        .btn:active { transform: scale(0.97); }
+        .btn-p { background: linear-gradient(135deg, rgb(244, 167, 176), rgb(240, 138, 150)); color: rgb(255, 255, 255); }
+        .btn-o { background: var(--card); border: 1.5px solid var(--border); color: var(--text); }
+        .btn-s { padding: 5px 12px; font-size: 10px; }
+        .btn-full { width: 100%; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .fg { margin-bottom: 12px; }
+        .fl { font-size: 10px; color: var(--text2); margin-bottom: 4px; display: block; font-weight: 600; }
+        .fi, .fs, .ft { width: 100%; padding: 9px 12px; border-radius: 14px; border: 1.5px solid var(--border); background: var(--bg2); color: var(--text); font-size: 12px; font-family: var(--font); outline: none; transition: border-color 0.2s ease 0s; }
+        .fi:focus, .fs:focus, .ft:focus { border-color: var(--accent); }
+        .ft { min-height: 50px; resize: vertical; }
+        .home { flex: 1 1 0%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px 24px; text-align: center; }
+        .home-logo { font-size: 52px; margin-bottom: 6px; }
+        .home-t { font-size: 22px; font-weight: 800; color: var(--text); }
+        .home-st { font-size: 11px; color: var(--text2); margin: 5px 0px 22px; line-height: 1.7; }
+        .home-btn { width: 100%; max-width: 280px; padding: 13px 18px; border-radius: 22px; border: 1.5px solid var(--border); background: var(--card); color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer; margin-bottom: 9px; display: flex; align-items: center; gap: 8px; justify-content: center; transition: all 0.2s ease 0s; box-shadow: var(--shadow); font-family: var(--font); }
+        .home-btn:active { transform: scale(0.97); }
+        .home-btn.pri { background: linear-gradient(135deg,var(--accent),#f08a96); color: rgb(255, 255, 255); border-color: var(--accent); }
+        .nav { position: fixed; bottom: 0px; left: 0px; right: 0px; background: var(--card); border-top: 1px solid var(--border); display: none; padding: 4px 0 env(safe-area-inset-bottom,6px); z-index: 200; box-shadow: rgba(244, 167, 176, 0.08) 0px -2px 10px; }
+        .nav.show { display: flex; }
+        .nav-i { flex: 1 1 0%; display: flex; flex-direction: column; align-items: center; padding: 4px 1px; cursor: pointer; gap: 1px; border-radius: 10px; margin: 0px 1px; position: relative; }
+        .nav-i:active { background: var(--pink2); }
+        .nav-i.act .nav-ico, .nav-i.act .nav-lb { color: var(--accent); }
+        .nav-ico { font-size: 18px; color: var(--text2); transition: color 0.2s ease 0s; }
+        .nav-lb { font-size: 8px; color: var(--text2); font-weight: 600; }
+        .game-body { flex: 1 1 0%; overflow-y: auto; padding-bottom: 120px; } /* 增加底部padding以容纳输入框 */
+        .tab-page { display: none; animation: 0.3s ease 0s 1 normal none running fadeIn; height: 100%; }
+        .tab-page.active { display: block; }
+        .cc-dots { display: flex; justify-content: center; gap: 6px; margin: 12px 0; padding: 0px 16px; }
+        .cc-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: all 0.3s ease; }
+        .cc-dot.act { background: var(--accent); box-shadow: rgba(244, 167, 176, 0.4) 0px 0px 8px; transform: scale(1.2); }
+        .cc-opt { padding: 12px; border: 1.5px solid var(--border); border-radius: 16px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s ease 0s; background: var(--card); font-size: 12px; line-height: 1.6; }
+        .cc-opt:active, .cc-opt.sel { border-color: var(--accent); background: var(--pink2); box-shadow: 0 0 0 2px rgba(244, 167, 176, 0.3); }
+        .cc-opt .ot { font-weight: 700; color:var(--text) }
+        .cc-opt .od { font-size: 10px; color: var(--text2); margin-top: 3px; }
+
+        /* --- 动态剧情与聊天UI --- */
+        .story-list { padding: 12px; display: flex; flex-direction: column; gap: 12px; }
+        .msg-box { max-width: 90%; padding: 12px 16px; border-radius: 18px; font-size: 13px; line-height: 1.7; position: relative; word-wrap: break-word; }
+        .msg-ai { background: var(--card); border: 1px solid var(--border); border-top-left-radius: 4px; align-self: flex-start; color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+        .msg-user { background: var(--accent); color: #fff; border-top-right-radius: 4px; align-self: flex-end; box-shadow: 0 2px 8px rgba(244,167,176,0.2); }
+        .chat-bar { position: fixed; bottom: 50px; left: 0; right: 0; background: var(--card); padding: 10px 14px; border-top: 1px solid var(--border); display: flex; gap: 8px; align-items: center; z-index: 150; box-shadow: 0 -4px 12px rgba(0,0,0,0.03); }
+        .chat-input { flex: 1; border: 1px solid var(--border); background: var(--bg); border-radius: 20px; padding: 10px 16px; font-size: 13px; outline: none; transition: all 0.2s; }
+        .chat-input:focus { border-color: var(--accent); }
+        .chat-send { background: var(--accent); color: white; border: none; width: 38px; height: 38px; border-radius: 50%; font-size: 16px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        .chat-send:active { transform: scale(0.9); }
+
+        /* 动态身份、手机、结局、行囊 UI */
+        .id-card { background: linear-gradient(135deg, var(--card), var(--pink2)); border: 2px solid var(--border); border-radius: 20px; padding: 20px; position: relative; overflow: hidden; box-shadow: var(--shadow); margin: 16px;}
+        .id-header { display: flex; align-items: center; gap: 16px; border-bottom: 2px dashed var(--border2); padding-bottom: 16px; margin-bottom: 16px; }
+        .id-avatar { width: 60px; height: 60px; border-radius: 16px; background: var(--pink3); border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: inset 0 2px 4px rgba(255,255,255,0.5); }
+        .id-name { font-size: 18px; font-weight: 800; color: var(--accent); }
+        .id-tags { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;}
+        .id-tag { font-size: 10px; background: var(--card); border: 1px solid var(--border); padding: 3px 8px; border-radius: 12px; font-weight: 600; color: var(--text2); }
+        .id-row { margin-bottom: 12px; }
+        .id-label { font-size: 11px; color: var(--text2); font-weight: 700; margin-bottom: 4px;}
+        .id-value { font-size: 12px; color: var(--text); line-height: 1.6; background: rgba(255,255,255,0.6); padding: 8px 12px; border-radius: 10px; }
+
+        .phone-frame { width: 100%; max-width: 400px; margin: 16px auto; background: linear-gradient(145deg, rgb(255, 214, 220), rgb(252, 228, 232)); border-radius: 36px; padding: 8px; box-shadow: rgba(244, 167, 176, 0.2) 0px 8px 30px, rgba(255, 255, 255, 0.5) 0px 1px 0px inset; }
+        .phone-screen { background: rgb(255, 255, 255); border-radius: 30px; overflow: hidden; min-height: 400px; position: relative; display: flex; flex-direction: column; }
+        .phone-notch { width: 80px; height: 22px; background: linear-gradient(135deg, rgb(244, 167, 176), rgb(240, 138, 150)); border-radius: 0px 0px 14px 14px; margin: 0px auto; }
+        .wx-contact { display: flex; align-items: center; gap: 10px; padding: 12px; border-bottom: 1px solid rgb(245, 240, 237); }
+        .wx-av { width: 44px; height: 44px; border-radius: 6px; background: var(--blue); display: flex; align-items: center; justify-content: center; font-size: 18px; color:#4a7a9a; font-weight:bold;}
+        .wx-info { flex: 1 1 0%; }
+        .wx-nm { font-size: 13px; font-weight: 600; }
+        .wx-msg { font-size: 11px; color: rgb(153, 153, 153); margin-top: 2px; }
+
+        .ending-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 16px; padding: 14px; margin-bottom: 10px; }
+        .ending-card.locked { opacity: 0.5; filter: grayscale(1); border-style: dashed;}
+        .ending-card.unlocked { border-color: var(--accent4); background: rgb(245, 255, 243); }
+        .badge { display: inline-flex; align-items: center; gap: 2px; padding: 2px 8px; border-radius: 12px; font-size: 9px; font-weight: 700; margin-bottom:6px;}
+        .badge.b-blue { background: var(--blue); color: rgb(74, 122, 154); }
+        .badge.b-gray { background: #eee; color: #999; }
+
+        .item-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 16px; padding: 12px; display: flex; align-items: center; gap: 12px; margin-bottom:10px; }
+        .item-icon { width: 40px; height: 40px; background: var(--bg); border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 20px; }
+        .item-info flex { flex: 1; }
+        .item-name { font-weight: 700; font-size: 13px; color: var(--text); }
+        .item-desc { font-size: 11px; color: var(--text2); margin-top: 2px; }
+    </style>
+</head>
+<body>
+
+<div class="lo-ov" id="loadOv"><div class="lo-sp"></div><div class="lo-t" id="loadTxt">AI 正在编织命运...</div></div>
+<input type="file" id="importPromptFile" accept=".json" style="display:none">
+
+<div class="screen active" id="scrHome">
+    <div class="home" style="min-height:100vh">
+        <div class="home-logo">🌌</div>
+        <div class="home-t">KALIDA</div>
+        <div style="font-size:12px;color:var(--accent);margin:3px 0;font-weight:600">通用世界观模拟器 (异乡人核心)</div>
+        <div class="home-st">"创造你的世界，书写你的故事。"<br>☁️ 动态交互 · 万物有灵 ☁️</div>
+        <button class="home-btn pri" data-target="scrCC">🎮 开始新游戏</button>
+        <button class="home-btn" data-target="scrSave">💾 存档 / 读档</button>
+        <button class="home-btn" data-target="scrPrompt">📝 高级设定 (Prompt)</button>
+        <button class="home-btn" data-target="scrApi">🔌 API 配置</button>
+        <div style="font-size:9px;color:var(--text3);margin-top:18px">v2.0 · 🌌 Dynamic Interactive Engine</div>
+    </div>
+</div>
+
+<div class="screen" id="scrApi">
+    <div class="hdr"><button class="back">‹</button><h1>🔌 API 配置</h1></div>
+    <div style="flex:1;overflow-y:auto;padding-bottom:16px">
+        <div class="cloud">
+            <div class="fg"><label class="fl">Base URL</label><input class="fi" id="apiUrl" placeholder="https://api.openai.com/v1"></div>
+            <div class="fg"><label class="fl">API Key</label><input class="fi" id="apiKey" type="password" placeholder="sk-xxxxxx"></div>
+            <div class="fg">
+                <label class="fl">Model</label>
+                <div style="display:flex;gap:5px">
+                    <select class="fs" id="apiSel" style="flex:1"><option value="">--点击右侧按钮拉取--</option></select>
+                    <button id="apiRefreshBtn" class="btn btn-o btn-s">🔄</button>
+                </div>
+            </div>
+            <div class="fg">
+                <label class="fl">或手动输入模型</label>
+                <input class="fi" id="apiModel" placeholder="当上方未选择时，使用此处的模型">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="screen" id="scrPrompt">
+    <div class="hdr"><button class="back">‹</button><h1>📝 高级设定</h1></div>
+    <div style="flex:1;overflow-y:auto;padding-bottom:16px">
+        <div class="cloud">
+            <div class="cloud-t">📜 基础世界观</div>
+            <div class="fg"><label class="fl">世界观 (Worldview)</label><textarea class="ft" id="promptWorldview" rows="5"></textarea></div>
+            <div class="fg"><label class="fl">文风指导 (Style Guide)</label><textarea class="ft" id="promptStyle" rows="2"></textarea></div>
+        </div>
+        <div class="cloud">
+            <div class="cloud-t">📦 导入高级酒馆预设</div>
+            <button class="btn btn-o btn-full" id="importPresetBtn">📥 导入预设 (.json)</button>
+        </div>
+    </div>
+</div>
+
+<div class="screen" id="scrSave">
+    <div class="hdr"><button class="back">‹</button><h1>💾 存档管理</h1></div>
+    <div style="flex:1;overflow-y:auto;padding-bottom:16px">
+        <div class="cloud">
+            <button class="btn btn-p btn-full" id="btnSaveGame" style="margin-bottom: 10px;">💾 保存当前进度 (包含行囊等)</button>
+            <div id="saveList"><div style="text-align:center; font-size:12px; color:var(--text2); padding:20px;">暂无存档</div></div>
+        </div>
+    </div>
+</div>
+
+<div class="screen" id="scrCC">
+    <div class="hdr"><button class="back">‹</button><h1>🎭 世界观构建</h1></div>
+    <div class="cc-dots" id="ccDots"><div class="cc-dot"></div><div class="cc-dot"></div><div class="cc-dot"></div></div>
+    <div style="flex:1;overflow-y:auto;padding-bottom:16px" id="ccBox"></div>
+</div>
+
+<!-- 游戏主界面 -->
+<div class="screen" id="scrGame">
+    <div class="hdr" style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px">
+        <div style="font-size:13px;font-weight:700;color:var(--accent)" id="inGameHeader">KALIDA - 正在连接...</div>
+    </div>
+    
+    <div class="game-body" id="gameBody">
+        <!-- 动态：故事线 -->
+        <div class="tab-page active" id="tabStory" style="position:relative;">
+            <div class="story-list" id="storyList">
+                <!-- 聊天记录将渲染在这里 -->
+            </div>
+            <!-- 剧情输入框 -->
+            <div class="chat-bar" id="chatBar">
+                <input type="text" id="playerInput" class="chat-input" placeholder="输入你的行动或对话...">
+                <button class="chat-send" id="sendBtn">↑</button>
+            </div>
+        </div>
+        
+        <!-- 静态/渲染：身份 -->
+        <div class="tab-page" id="tabChar">
+            <div class="id-card" id="charIdCard">加载中...</div>
+        </div>
+
+        <!-- 动态：行囊 (Bag) -->
+        <div class="tab-page" id="tabBag">
+            <div class="cloud">
+                <div class="cloud-t">🧳 随身行囊</div>
+                <p style="font-size:11px; color:var(--text2); margin-bottom:12px;">你在旅途中获得的物品会自动存放在这里。</p>
+                <div id="bagContainer">
+                    <div style="text-align:center;color:#999;font-size:12px;padding:20px;">行囊空空如也</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 动态：手机 (Phone) -->
+        <div class="tab-page" id="tabPhone">
+            <div class="phone-frame">
+                <div class="phone-screen">
+                    <div class="phone-notch"></div>
+                    <div style="padding: 10px 16px; font-size:14px; font-weight:bold; border-bottom:1px solid #eee;">通讯录 (消息)</div>
+                    <div style="flex:1; overflow-y:auto; background:#fff;" id="phoneContainer">
+                        <!-- 动态联系人 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 动态：结局 (Endings) -->
+        <div class="tab-page" id="tabEnding">
+            <div class="cloud">
+                <div class="cloud-t">🏆 命运收集册</div>
+                <p style="font-size:11px; color:var(--text2); margin-bottom:12px;">你的选择导向的独特结局。</p>
+                <div id="endingsContainer">
+                    <div class="ending-card unlocked">
+                        <span class="badge b-blue">已解锁</span>
+                        <div style="font-weight:700; color:var(--text); margin-bottom:4px;">✨ 新的旅程</div>
+                        <div style="font-size:11px; color:var(--text2);">你成功接入了系统，世界因你而改变。</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="nav" id="mainNav">
+        <div class="nav-i act" data-target="tabStory"><span class="nav-ico">📖</span><span class="nav-lb">动态</span></div>
+        <div class="nav-i" data-target="tabChar"><span class="nav-ico">👤</span><span class="nav-lb">身份</span></div>
+        <div class="nav-i" data-target="tabBag"><span class="nav-ico">🧳</span><span class="nav-lb">行囊</span></div>
+        <div class="nav-i" data-target="tabPhone"><span class="nav-ico">📱</span><span class="nav-lb">手机</span></div>
+        <div class="nav-i" data-target="tabEnding"><span class="nav-ico">🏆</span><span class="nav-lb">结局</span></div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const G = {
+        allScreens: document.querySelectorAll('.screen'),
+        allTabPages: document.querySelectorAll('.tab-page'),
+        mainNav: document.getElementById('mainNav'),
+        loadOverlay: document.getElementById('loadOv'),
+        
+        apiUrlInput: document.getElementById('apiUrl'),
+        apiKeyInput: document.getElementById('apiKey'),
+        apiSel: document.getElementById('apiSel'),
+        apiModelInput: document.getElementById('apiModel'),
+        apiRefreshBtn: document.getElementById('apiRefreshBtn'),
+
+        importPresetBtn: document.getElementById('importPresetBtn'),
+        importPromptFile: document.getElementById('importPromptFile'),
+        
+        tavernPresetText: "",
+
+        ccBox: document.getElementById('ccBox'),
+        ccDots: document.getElementById('ccDots').children,
+        currentCCStep: 0,
+        
+        // 核心游戏数据状态树
+        gameData: {
+            theme: "", worldName: "", worldBg: "",
+            charName: "", charGender: "", charAge: "", charApp: "", charPersonality: "", charBg: "", charItem: "", charGoal: "",
+            history: [], // [{role:'assistant', content:'...'}, {role:'user', content:'...'}]
+            bag: [],     // [{name:'木剑', desc:'一把破旧的剑'}]
+            phone: [],   // [{sender:'神秘人', msg:'快逃！'}]
+            endings: []  // [{name:'死亡', desc:'你被怪物杀死了'}]
+        }, 
+
+        storyList: document.getElementById('storyList'),
+        playerInput: document.getElementById('playerInput'),
+        sendBtn: document.getElementById('sendBtn'),
+        chatBar: document.getElementById('chatBar'),
+        
+        bagContainer: document.getElementById('bagContainer'),
+        phoneContainer: document.getElementById('phoneContainer'),
+        endingsContainer: document.getElementById('endingsContainer'),
+        
+        btnSaveGame: document.getElementById('btnSaveGame'),
+        saveList: document.getElementById('saveList'),
+    };
+
+    // ================= 初始化与导航 =================
+    function showScreen(screenId) {
+        G.allScreens.forEach(screen => screen.classList.remove('active'));
+        const targetScreen = document.getElementById(screenId);
+        if(targetScreen) targetScreen.classList.add('active');
+        
+        if (screenId === 'scrGame') G.mainNav.classList.add('show');
+        else G.mainNav.classList.remove('show');
+        
+        if (screenId === 'scrCC') {
+            G.currentCCStep = 0;
+            // 清空旧数据
+            G.gameData = { history:[], bag:[], phone:[], endings:[] };
+            renderCCStep();
+        }
+    }
+
+    function showTabPage(tabPageId) {
+        G.allTabPages.forEach(page => page.classList.remove('active'));
+        const targetPage = document.getElementById(tabPageId);
+        if(targetPage) targetPage.classList.add('active');
+        
+        // 只有在剧情页才显示底部的输入框
+        G.chatBar.style.display = (tabPageId === 'tabStory') ? 'flex' : 'none';
+    }
+
+    // ================= 数据动态渲染 =================
+    // 渲染聊天记录
+    function renderChat() {
+        G.storyList.innerHTML = '';
+        G.gameData.history.forEach(msg => {
+            if (msg.role === 'system') return; // 不渲染系统提示词
+            const div = document.createElement('div');
+            div.className = `msg-box ${msg.role === 'user' ? 'msg-user' : 'msg-ai'}`;
+            // 简单处理换行
+            div.innerHTML = msg.content.replace(/\n/g, '<br>'); 
+            G.storyList.appendChild(div);
+        });
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    // 渲染行囊
+    function renderBag() {
+        if (G.gameData.bag.length === 0) {
+            G.bagContainer.innerHTML = `<div style="text-align:center;color:#999;font-size:12px;padding:20px;">行囊空空如也</div>`;
+            return;
+        }
+        G.bagContainer.innerHTML = G.gameData.bag.map(item => `
+            <div class="item-card">
+                <div class="item-icon">📦</div>
+                <div class="item-info">
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-desc">${item.desc}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // 渲染手机通讯录
+    function renderPhone() {
+        if (G.gameData.phone.length === 0) {
+            G.phoneContainer.innerHTML = `
+                <div class="wx-contact">
+                    <div class="wx-av" style="background:var(--blue)">💡</div>
+                    <div class="wx-info">
+                        <div class="wx-nm">系统引路人</div>
+                        <div class="wx-msg">随着剧情推进，你的羁绊和消息会出现在这里。</div>
+                    </div>
+                </div>`;
+            return;
+        }
+        G.phoneContainer.innerHTML = G.gameData.phone.map(contact => `
+            <div class="wx-contact">
+                <div class="wx-av">${contact.sender.charAt(0)}</div>
+                <div class="wx-info">
+                    <div class="wx-nm">${contact.sender}</div>
+                    <div class="wx-msg">"${contact.msg}"</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // 渲染结局
+    function renderEndings() {
+        let html = `
+            <div class="ending-card unlocked">
+                <span class="badge b-blue">已解锁</span>
+                <div style="font-weight:700; color:var(--text); margin-bottom:4px;">✨ 初始旅程</div>
+                <div style="font-size:11px; color:var(--text2);">你成功接入了系统。</div>
+            </div>
+        `;
+        G.gameData.endings.forEach(end => {
+            html += `
+            <div class="ending-card unlocked" style="border-color:var(--accent);">
+                <span class="badge" style="background:var(--accent);color:#fff;">新结局达成</span>
+                <div style="font-weight:700; color:var(--text); margin-bottom:4px;">${end.name}</div>
+                <div style="font-size:11px; color:var(--text2);">${end.desc}</div>
+            </div>`;
+        });
+        G.endingsContainer.innerHTML = html;
+    }
+
+    function renderCharIDCard() {
+        document.getElementById('inGameHeader').innerText = `KALIDA - ${G.gameData.worldName}`;
+        const idCard = document.getElementById('charIdCard');
+        if(!idCard || !G.gameData.charName) return;
+        idCard.innerHTML = `
+            <div class="id-header">
+                <div class="id-avatar">👤</div>
+                <div><div class="id-name">${G.gameData.charName}</div>
+                <div class="id-tags"><span class="id-tag">${G.gameData.charGender}</span><span class="id-tag">${G.gameData.charAge}岁</span></div></div>
+            </div>
+            <div class="id-row"><div class="id-label">🧬 外貌与性格</div><div class="id-value">${G.gameData.charApp} · ${G.gameData.charPersonality}</div></div>
+            <div class="id-row"><div class="id-label">📜 身世与过往</div><div class="id-value">${G.gameData.charBg}</div></div>
+            <div class="id-row" style="margin-bottom:0;"><div class="id-label">🎯 终极目标</div><div class="id-value" style="background:var(--yellow);">${G.gameData.charGoal}</div></div>
+        `;
+    }
+
+    // ================= 存档/读档 =================
+    window.loadGameState = function() {
+        const dataStr = localStorage.getItem('kalida_save_1');
+        if (dataStr) {
+            try {
+                const data = JSON.parse(dataStr);
+                G.gameData = data.gameData || { history:[], bag:[], phone:[], endings:[] };
+                G.tavernPresetText = data.tavernPresetText || ""; 
+                
+                // 渲染所有UI
+                renderCharIDCard(); 
+                renderChat();
+                renderBag();
+                renderPhone();
+                renderEndings();
+
+                showScreen('scrGame');
+                showTabPage('tabStory');
+                
+                G.mainNav.querySelectorAll('.nav-i').forEach(item => item.classList.remove('act'));
+                G.mainNav.querySelector('[data-target="tabStory"]')?.classList.add('act');
+                
+                alert('存档读取成功！');
+            } catch (e) {
+                alert('存档读取失败！');
+            }
+        }
+    };
+
+    function saveGameState() {
+        if (!G.gameData.worldName) { alert('当前没有正在进行的游戏可以保存！'); return; }
+        const saveData = {
+            gameData: G.gameData,
+            tavernPresetText: G.tavernPresetText,
+            time: new Date().toLocaleString()
+        };
+        localStorage.setItem('kalida_save_1', JSON.stringify(saveData));
+        alert('游戏状态、行囊和通讯录已成功保存！');
+        renderSaveList();
+    }
+
+    function renderSaveList() {
+        const dataStr = localStorage.getItem('kalida_save_1');
+        if (dataStr) {
+            try {
+                const data = JSON.parse(dataStr);
+                const worldName = data.gameData?.worldName || '未知世界';
+                const charName = data.gameData?.charName || '无名者';
+                G.saveList.innerHTML = `
+                    <div class="cc-opt" onclick="window.loadGameState()">
+                        <div class="ot">⭐ 本地最新存档</div>
+                        <div class="od">扮演者：${charName} <br> 所在世界：${worldName} <br> 保存时间：${data.time}</div>
+                        <button class="btn btn-o btn-s" style="margin-top:8px;">加载此存档</button>
+                    </div>`;
+            } catch(e) {}
+        }
+    }
+
+    // ================= AI交互与动态解析核心 =================
+
+    // 核心解析函数：抓取AI回复中的特定指令，动态更新状态，并返回纯净文本
+    function parseDynamicTags(rawText) {
+        let cleanText = rawText;
+        
+        // 解析【获得物品：名称|描述】
+        const addBagRegex = /【获得物品：(.*?)\|(.*?)】/g;
+        let match;
+        while ((match = addBagRegex.exec(rawText)) !== null) {
+            G.gameData.bag.push({ name: match[1].trim(), desc: match[2].trim() });
+        }
+        
+        // 解析【失去物品：名称】
+        const rmBagRegex = /【失去物品：(.*?)】/g;
+        while ((match = rmBagRegex.exec(rawText)) !== null) {
+            const rmName = match[1].trim();
+            G.gameData.bag = G.gameData.bag.filter(item => item.name !== rmName);
+        }
+
+        // 解析【新消息：发件人|内容】
+        const phoneRegex = /【新消息：(.*?)\|(.*?)】/g;
+        while ((match = phoneRegex.exec(rawText)) !== null) {
+            G.gameData.phone.push({ sender: match[1].trim(), msg: match[2].trim() });
+        }
+
+        // 解析【解锁结局：结局名|描述】
+        const endingRegex = /【解锁结局：(.*?)\|(.*?)】/g;
+        while ((match = endingRegex.exec(rawText)) !== null) {
+            G.gameData.endings.push({ name: match[1].trim(), desc: match[2].trim() });
+        }
+
+        // 清除所有用于底层指令的【】标签，只向玩家展示纯剧情
+        cleanText = cleanText.replace(/【(获得物品|失去物品|新消息|解锁结局)：.*?】/g, '').trim();
+
+        // 重新渲染UI组件
+        renderBag();
+        renderPhone();
+        renderEndings();
+
+        return cleanText;
+    }
+
+    // 封装的发送请求函数
+    async function sendChatRequest(userMessageText) {
+        const modelToUse = G.apiSel.value || G.apiModelInput.value.trim();
+        if (!G.apiUrlInput.value || !G.apiKeyInput.value || !modelToUse) {
+            alert('请先在API配置中完成设置！'); showScreen('scrApi'); return;
+        }
+
+        // 将玩家的发言加入历史并渲染
+        if (userMessageText) {
+            G.gameData.history.push({ role: 'user', content: userMessageText });
+            renderChat();
+            G.playerInput.value = ''; // 清空输入框
+        }
+
+        G.loadOverlay.classList.add('show');
+
+        // 构造发送给API的消息数组 (带上历史记录)
+        // 限制历史记录长度防止token溢出 (保留system和最近10条)
+        const messagesToSend = [ G.gameData.history[0] ]; // System prompt
+        const recentHistory = G.gameData.history.slice(1).slice(-10); 
+        messagesToSend.push(...recentHistory);
+
+        try {
+            const response = await fetch(`${G.apiUrlInput.value.trim()}/chat/completions`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${G.apiKeyInput.value.trim()}` },
+                body: JSON.stringify({ model: modelToUse, messages: messagesToSend })
+            });
+
+            if (!response.ok) throw new Error(`API Error ${response.status}`);
+            
+            const data = await response.json();
+            const rawReply = data.choices[0].message.content;
+            
+            // 核心：解析动态标签，更新行囊/手机/结局，提取纯净剧情
+            const cleanStory = parseDynamicTags(rawReply);
+
+            // 将AI的纯净剧情存入历史记录并渲染
+            G.gameData.history.push({ role: 'assistant', content: cleanStory });
+            renderChat();
+
+        } catch (error) {
+            alert(`请求失败: ${error.message}`);
+            // 失败时移除刚才加入的user记录
+            if(userMessageText) G.gameData.history.pop(); 
+            renderChat();
+        } finally {
+            G.loadOverlay.classList.remove('show');
+        }
+    }
+
+    // 开始新游戏
+    function handleStartGame() {
+        // 构造强大的系统提示词，包含动态指令规范
+        const systemPrompt = `你是一个世界顶级的互动文字冒险游戏(MUD)引擎。请严格遵守以下世界观与指令。
+【游戏基调】: ${G.gameData.theme}
+【世界观设定: ${G.gameData.worldName}】
+${G.gameData.worldBg}
+
+${G.tavernPresetText ? `\n【底层系统规则(最高优先级)】\n${G.tavernPresetText}` : ''}
+
+【核心动态指令规则】（必须严格遵守）
+在剧情发展中，如果发生了以下事件，你必须在回复的最末尾（不要混在正文中）使用精确的特定格式输出指令，系统会自动解析并更新前端UI：
+1. 当玩家获得物品时输出：【获得物品：物品名称|物品的简短描述】 (例如: 【获得物品：生锈的铁剑|一把带有缺口的新手武器】)
+2. 当玩家消耗、丢失物品时输出：【失去物品：物品名称】
+3. 当有NPC给玩家发短信、留字条或传音时输出：【新消息：发送者姓名|消息具体内容】
+4. 当玩家达成某个支线结局或游戏结束时输出：【解锁结局：结局名称|结局的解释说明】
+
+注意：
+- 不要输出“好的”、“我明白了”等多余的聊天话语。
+- 直接以生动、有沉浸感的小说视角进行剧情描写。
+- 每次回复不仅要推动剧情，还要给玩家留下行动的选择空间。`;
+
+        const userStartPrompt = `【系统：确认玩家身份档案】
+姓名：${G.gameData.charName} | 性别：${G.gameData.charGender} | 年龄：${G.gameData.charAge || '未知'}
+外貌：${G.gameData.charApp || '无明显特征'} | 性格：${G.gameData.charPersonality || '普通'}
+背景身世：${G.gameData.charBg || '普通人'}
+初始随身物品：${G.gameData.charItem || '无'}
+终极目标：${G.gameData.charGoal || '活下去'}
+
+请根据以上身份信息，为我生成故事的开局。生动描述我目前所处的环境和我面临的第一个小危机。
+如果我有“初始随身物品”，请在末尾加上【获得物品：xxx|xxx】指令。如果有神秘人指引我，请加上【新消息：xxx|xxx】指令。`;
+
+        // 初始化历史记录
+        G.gameData.history = [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userStartPrompt }
+        ];
+
+        // 初始化UI
+        G.gameData.bag = [];
+        G.gameData.phone = [];
+        G.gameData.endings = [];
+        
+        renderCharIDCard();
+        showScreen('scrGame');
+        showTabPage('tabStory');
+        
+        // 发送第一次请求
+        sendChatRequest(null); // null表示不需要额外push玩家输入，直接用history里预置的
+    }
+
+    // ================= 建卡流程与事件绑定 =================
+    const ccSteps = [
+        { title: "选择主题", content: `<div class="cc-opt" data-choice="科幻"><div class="ot">🚀 科幻</div></div><div class="cc-opt" data-choice="奇幻"><div class="ot">⚔️ 奇幻</div></div><div class="cc-opt" data-choice="现代"><div class="ot">🏙️ 现代</div></div>` },
+        { title: "定义世界", content: `<div class="fg"><label class="fl">世界名称</label><input class="fi" id="ccWorldName"></div><div class="fg"><label class="fl">核心设定</label><textarea class="ft" id="ccWorldBg" rows="5"></textarea></div><div style="display:flex;gap:8px;"><button class="btn btn-o" style="flex:1;" data-action="prev">‹ 上一步</button><button class="btn btn-p" style="flex:1;" data-action="next">下一步 ›</button></div>` },
+        { title: "建立身份档案", content: `
+            <div style="display:flex; gap:8px; margin-bottom:12px;">
+                <div class="fg" style="flex:1;"><label class="fl">姓名</label><input class="fi" id="ccCharName"></div>
+                <div class="fg" style="width:70px;"><label class="fl">性别</label><select class="fs" id="ccCharGender"><option>男</option><option>女</option></select></div>
+                <div class="fg" style="width:60px;"><label class="fl">年龄</label><input class="fi" id="ccCharAge" type="number"></div>
+            </div>
+            <div class="fg"><label class="fl">外貌特征</label><input class="fi" id="ccCharApp"></div>
+            <div class="fg"><label class="fl">性格倾向</label><input class="fi" id="ccCharPersonality"></div>
+            <div class="fg"><label class="fl">身世背景</label><textarea class="ft" id="ccCharBg" rows="2"></textarea></div>
+            <div class="fg"><label class="fl">初始羁绊物品</label><input class="fi" id="ccCharItem"></div>
+            <div class="fg"><label class="fl">终极目标</label><input class="fi" id="ccCharGoal"></div>
+            <div style="display:flex; gap:8px; margin-top:16px;">
+                <button class="btn btn-o" style="flex:1;" data-action="prev">‹ 上一步</button>
+                <button class="btn btn-p" style="flex:1;" data-action="start">开始游戏</button>
+            </div>` 
+        }
+    ];
+
+    function renderCCStep() {
+        Array.from(G.ccDots).forEach((dot, idx) => dot.classList.toggle('act', idx === G.currentCCStep));
+        G.ccBox.innerHTML = `<div class="cloud"><div class="cloud-t">${ccSteps[G.currentCCStep].title}</div>${ccSteps[G.currentCCStep].content}</div>`;
+    }
+    
+    function setupEventListeners() {
+        document.querySelectorAll('[data-target]').forEach(el => {
+            el.addEventListener('click', () => { showScreen(el.dataset.target); });
+        });
+        document.querySelectorAll('.back').forEach(btn => {
+            btn.addEventListener('click', () => showScreen('scrHome'));
+        });
+        G.mainNav.addEventListener('click', (e) => {
+            const navItem = e.target.closest('.nav-i');
+            if (!navItem) return;
+            G.mainNav.querySelectorAll('.nav-i').forEach(i => i.classList.remove('act'));
+            navItem.classList.add('act');
+            showTabPage(navItem.dataset.target);
+        });
+        
+        // 游戏互动按键
+        G.sendBtn.addEventListener('click', () => {
+            const text = G.playerInput.value.trim();
+            if (text) sendChatRequest(text);
+        });
+        G.playerInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') G.sendBtn.click();
+        });
+
+        G.apiRefreshBtn.addEventListener('click', async () => {
+            if (!G.apiUrlInput.value || !G.apiKeyInput.value) return alert('先填URL和KEY！');
+            try {
+                const res = await fetch(`${G.apiUrlInput.value.trim()}/models`, { headers: { 'Authorization': `Bearer ${G.apiKeyInput.value.trim()}` } });
+                const data = await res.json();
+                G.apiSel.innerHTML = '<option value="">--请选择--</option>';
+                data.data.forEach(m => G.apiSel.add(new Option(m.id, m.id)));
+                alert('拉取成功');
+            } catch(e) { alert('拉取失败'); }
+        });
+
+        G.importPresetBtn.addEventListener('click', () => G.importPromptFile.click());
+        G.importPromptFile.addEventListener('change', (e) => {
+            const r = new FileReader();
+            r.onload = (ev) => {
+                try {
+                    const j = JSON.parse(ev.target.result);
+                    if(j.prompts) {
+                        G.tavernPresetText = j.prompts.map(p => p.enabled!==false && p.content ? `[${p.name}]:${p.content}`:'').join('\n');
+                        alert('酒馆底层规则导入成功！');
+                    }
+                }catch(e){ alert('失败'); }
+            };
+            r.readAsText(e.target.files[0]);
+        });
+
+        if(G.btnSaveGame) G.btnSaveGame.addEventListener('click', saveGameState);
+
+        G.ccBox.addEventListener('click', (e) => {
+            const choice = e.target.closest('.cc-opt');
+            const action = e.target.closest('button')?.dataset.action;
+            if (choice && G.currentCCStep === 0) { G.gameData.theme = choice.dataset.choice; G.currentCCStep++; renderCCStep(); }
+            else if (action === 'next') { G.gameData.worldName = document.getElementById('ccWorldName').value; G.gameData.worldBg = document.getElementById('ccWorldBg').value; G.currentCCStep++; renderCCStep(); }
+            else if (action === 'prev') { G.currentCCStep--; renderCCStep(); }
+            else if (action === 'start') {
+                ['charName','charGender','charAge','charApp','charPersonality','charBg','charItem','charGoal'].forEach(k => {
+                    G.gameData[k] = document.getElementById(`cc${k.charAt(0).toUpperCase() + k.slice(1)}`).value.trim();
+                });
+                if(!G.gameData.charName) return alert('姓名不能为空！');
+                handleStartGame();
+            }
+        });
+    }
+
+    setupEventListeners();
+    renderSaveList(); 
+});
+</script>
+</body>
+</html>
